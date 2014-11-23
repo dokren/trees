@@ -15,7 +15,7 @@ data Btree x
 	-- | Branch Br consisting of two children and a label x.
 	| Br (Btree x) x (Btree x)
 		deriving Show
-	
+
 -- | The fork (f, g) of two functions f and g takes a single value and returns a pair; thus fork (f, g) a = (f a, g a)
 fork :: (a -> b, a -> d) -> a -> (b, d)
 fork (f, g) a = (f a, g a)
@@ -23,6 +23,16 @@ fork (f, g) a = (f a, g a)
 -- | Converts an element to singleton list.
 wrapl :: a -> [a]
 wrapl a = [a]
+
+-- | Returns the smallest element of the given list.
+smallest :: Ord a => [a] -> a
+smallest [x] = x
+smallest (x:xs) = min x (smallest xs)
+
+-- | Returns the largest element of the given list.
+largest :: Ord a => [a] -> a
+largest [x] = x
+largest (x:xs) = max x (largest xs)
 
 -- | Map function on binary trees.
 bmap :: (a -> b) -> Btree a -> Btree b
@@ -106,5 +116,46 @@ depths :: Btree a -> Btree Integer
 depths = down plen
 
 
+-- | Zip two lists using function f. Short version.
+szip :: (a -> a -> a) -> ([a], [a]) -> [a]
+szip f ([], _) = []
+szip f (_, []) = []
+szip f (x:xs, y:ys) = [f x y] ++ szip f (xs, ys)
+
+-- | Zip two lists using function f. Long version.
+lzip :: (a -> a -> a) -> ([a], [a]) -> [a]
+lzip f ([], y) = y
+lzip f (x, []) = x
+lzip f (x:xs, y:ys) = [f x y] ++ lzip f (xs, ys)
+
+-- | Takes a binary tree and returns a list of lists, each containing elements that belong to the same level.
+levels :: Btree a -> [[a]]
+levels (Lf x) = (wrapl.wrapl) x
+levels (Br l x r) = (wrapl.wrapl) x ++ (lzip (++) (levels l, levels r))
+
+-- | Infix function that calculates the width of the narrowest part of the gap between the trees.
+(<+>) :: (Num a, Ord a) => Btree a -> Btree a -> a
+p <+> q = smallest(szip (\x -> \y -> y - x) (map largest (levels p), map smallest (levels q)))
+
+-- | Replaces every element with x coordinates relative to root node.
+bdraw :: (Ord b, Fractional b) => Btree a -> Btree b
+bdraw (Lf a) = Lf 0
+bdraw (Br l x r) = Br (bmap (+(negate d)) (bdraw l)) 0 (bmap (+d) (bdraw r)) where d = sep(Br l x r)
+
+-- | Calculates optimal offset for children nodes for the given tree.
+sep (Lf a) = 0
+sep (Br l x r) = (1 - (bdraw l <+> bdraw r)) / 2
+
+-- | Gives the relative position of every parent.
+--rel :: Btree a -> Btree Double
+--rel = bmap sep.subtrees
+rel :: (Ord b, Fractional b) => Btree a -> Btree b
+rel (Lf _) = Lf 0
+rel (Br l x r) = Br (rel l)  (sep (Br l x r)) (rel r)
+
+tabs (Lf _) = Lf 0
+tabs (Br l x r) = Br (bmap (+(negate x)) (tabs l)) 0 (bmap (+x) (tabs r))
+
 -- test variables
 t = Br (Lf "b") "a" (Br (Lf "d") "c" (Lf "e"))
+v = Br (Br (Lf "f") "b" (Lf "g")) "a" (Br (Lf "d") "c" (Lf "e"))
