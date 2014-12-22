@@ -174,7 +174,7 @@ tabs (Br l x r) = Br (bmap (+(negate x)) (tabs l)) 0 (bmap (+x) (tabs r))
 drawSVG :: Show a => FilePath -> Btree a -> IO ()
 drawSVG fname t = renderSVG fname (mkSizeSpec (Just 1000.0) (Just 1000.0)) (tRender t)
 
-tRender t = renderTree (\n -> (alignedText 0.5 0.7 (show n) # fontSizeL 0.3 <> circle 0.3 # fc white)) (~~) (mkTree t (addLevels (bdraw t) 0)) # centerXY # pad 1.1
+tRender t = renderTree (\n -> (alignedText 0.5 0.7 (show n) # fontSizeL 0.3 # fc white <> circle 0.3 # fc black # lc white)) (~~) (mkTree t (addLevels (bdraw t) 0)) # centerXY # pad 1.1
 
 mkTree :: Btree a -> Btree (Double, Double) -> Tree (a, P2)
 mkTree (Lf el) (Lf (x,y)) = Node(el, p2(x,y)) []
