@@ -161,14 +161,6 @@ bdraw (Br l x r) = Br (bmap (+(negate d)) (bdraw l)) 0 (bmap (+d) (bdraw r)) whe
 tSep (Lf a) = 0
 tSep (Br l x r) = (1 - (bdraw l <+> bdraw r)) / 2
 
--- | Gives the relative position of every parent.
-rel :: Btree a -> Btree Double
-rel (Lf _) = Lf 0
-rel (Br l x r) = Br (rel l)  (tSep (Br l x r)) (rel r)
-
-tabs (Lf _) = Lf 0
-tabs (Br l x r) = Br (bmap (+(negate x)) (tabs l)) 0 (bmap (+x) (tabs r))
-
 
 -- PART II: Drawing
 drawSVG :: Show a => FilePath -> Btree a -> IO ()
