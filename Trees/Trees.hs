@@ -12,6 +12,21 @@ import Diagrams.Prelude
 import Diagrams.Backend.SVG
 import Data.Tree
 import Diagrams.TwoD.Layout.Tree
+import System.Random
+
+randomList seed = randoms (mkStdGen seed) :: [Double]
+
+values :: Int -> [Int]
+values seed = map fst $ scanl (\(r, gen) _ -> random gen) (random (mkStdGen seed)) $ repeat ()
+
+--random2DList (x:xs) = (randoms (mkStdGen x) :: [Double]) : (random2DList xs)
+
+generateRandomTree 0 _ = Lf (LabelS "N")
+generateRandomTree j n = Br (generateRandomTree m x) (LabelS "N") (generateRandomTree (i-m) y)
+				where i = j - 1
+				      (x:y:z:xyzs) = values n
+				      m = ceiling (head (randoms (mkStdGen z) :: [Double]) * (fromIntegral i)) :: Int
+				      
 
 -- PART I: Computation
 

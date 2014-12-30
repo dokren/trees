@@ -2,7 +2,22 @@ import Diagrams.Prelude
 import Diagrams.Backend.SVG
 import Data.Tree
 import Diagrams.TwoD.Layout.Tree
+import System.Random
 
+
+import System.CPUTime
+
+randomList seed = randoms (mkStdGen seed) :: [Double]
+
+values :: Int -> [Int]
+values seed = map fst $ scanl (\(r, gen) _ -> random gen) (random (mkStdGen seed)) $ repeat ()
+
+generateRandomTree 0 _ = Lf 1
+generateRandomTree j n = Br (generateRandomTree m x) 1 (generateRandomTree (i-m) y)
+				where i = j - 1
+				      (x:y:z:xyzs) = values n
+				      m = ceiling (head (randoms (mkStdGen z) :: [Double]) * (fromIntegral i)) :: Int
+				      
 -- PART I: Computation
 
 -- | Btree stands for Binary Tree.
@@ -58,7 +73,7 @@ mapplus (b, x : xs) = (x + b) : xs
 lzipfst :: Num t => ([t], [t]) -> [t]
 lzipfst (x, y) = if (nst (x, y)) then x
 								 else (x ++ mapplus (sum v - sum x, w))
-										where (v, w) = split (length x, y)
+						where (v, w) = splitList (length x, y)
 
 lzipsnd :: Num t => ([t], [t]) -> [t]
 lzipsnd (x, y) = lzipfst (y, x)
@@ -68,17 +83,20 @@ nst(x, [b]) = True
 nst([x], b : bs) = False
 nst(x : xs, b : bs) = nst (xs, bs)
 
-split :: (Num t, Eq t) => (t, [t1]) -> ([t1], [t1])
-split (1, x : xs) = ([x], xs)
-split (n, x : xs) = (x : v, w) where (v, w) = split (n - 1, xs)
+splitList :: (Num t, Eq t) => (t, [t1]) -> ([t1], [t1])
+splitList (1, x : xs) = ([x], xs)
+splitList (n, x : xs) = (x : v, w) where (v, w) = splitList (n - 1, xs)
 
 spread :: (Ord a, Num a) => ([a], [a]) -> a
 spread ([0], [0]) = 0
-spread (0 : xs, 0 : ys ) = - (head xs) <.> (head ys) 
+spread (0 : xs, 0 : ys ) = (negate (head xs)) <.> (head ys) 
 	where a <.> b = min a b
 
 (<:*:>) :: (Ord a, Num a) => [a] -> [a] -> a
-p <:*:> q = smallest (szip (\x -> \y -> y - x) (p , q))
+p <:*:> q = smallest (szip (\x -> \y -> y - x) (nth p , nth q))
+
+nth [x] = [x]
+nth (x:xs) = x : map (+x) (nth xs)
 
 btabs = bmap fst . down pabsb
 
@@ -126,7 +144,7 @@ wrapp a = Sep a
 
 subtrees :: Btree a -> Btree (Btree a)
 subtrees (Lf x) = Lf (Lf x)
-subtrees (Br l x r) = Br (subtrees l) (Br r x l) (subtrees r)		
+subtrees (Br l x r) = Br (subtrees l) (Br l x r) (subtrees r)		
 				
 -- PART III: Drawing
 drawSVG :: Show a => FilePath -> Btree a -> IO ()
