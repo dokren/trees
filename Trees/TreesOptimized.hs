@@ -93,7 +93,14 @@ spread (0 : xs, 0 : ys ) = (negate (head xs)) <.> (head ys)
 	where a <.> b = min a b
 
 (<:*:>) :: (Ord a, Num a) => [a] -> [a] -> a
-p <:*:> q = smallest (szip (\x -> \y -> y - x) (nth p , nth q))
+p <:*:> q = smallest (abszip p q 0 0)
+
+
+abszip :: Num t => [t] -> [t] -> t -> t -> [t]
+abszip [] _ _ _ = []
+abszip _ [] _ _ = []
+abszip (x:xs) (y:ys) delx dely = ((dely + y) - (delx + x)) : abszip xs ys (delx + x) (dely + y)
+
 
 nth [x] = [x]
 nth (x:xs) = x : map (+x) (nth xs)
@@ -115,10 +122,6 @@ bottom (x :<++: y) = bottom y
 down :: (TPath a -> b) -> Btree a -> Btree b
 down f = bmap f . paths
 
-szip :: (a -> a -> a) -> ([a], [a]) -> [a]
-szip f ([], _) = []
-szip f (_, []) = []
-szip f (x:xs, y:ys) = [f x y] ++ szip f (xs, ys)
 
 paths :: Btree a -> Btree (TPath a)
 paths (Lf x) = Lf (wrapp x)
