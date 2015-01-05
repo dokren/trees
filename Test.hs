@@ -3,10 +3,15 @@ module Test where
 --import Trees.Trees
 import Trees.TreesOptimized
 import System.Random
-import Criterion.Main
+--import Criterion.Main
+import System.CPUTime
+import Control.DeepSeq
 
 values :: Int -> [Int]
 values seed = map fst $ scanl (\(r, gen) _ -> random gen) (random (mkStdGen seed)) $ repeat ()
+
+--generiraj :: Num x => Int -> Int -> Btree x
+generiraj n s = generateRandomTree (round ((fromIntegral n)/2.0)) s
 
 generateRandomTree 0 _ = Lf 1
 generateRandomTree j n = Br (generateRandomTree m x) 1 (generateRandomTree (i-m) y)
@@ -26,6 +31,23 @@ generateNdepth n = Br (generateNdepth (n-1)) 1 (generateNdepth (n-1))
 -- Benchmarking different seeds, same node count.
 --main = defaultMain(map (\x -> bench (show x) (bs x)) (map (\x -> 2^x) [1 .. 31]))
 
-bm n = nf (\x -> bdraw(generateRandomTree x 42)) n
-bn n = nf (\x -> bdraw(generateNdepth x)) n
-bs n = nf (\x -> bdraw(generateRandomTree 10000 x)) n
+--bm n = nf (\x -> bdraw(generateRandomTree x 42)) n
+--bn n = nf (\x -> bdraw(generateNdepth x)) n
+--bs n = nf (\x -> bdraw(generateRandomTree 10000 x)) n
+
+nodes (Lf _) = 1
+nodes (Br l _ r) = 1 + nodes l + nodes r
+
+times [] = do return []
+times (t:ts) = do
+		startTime <- t `deepseq` getCPUTime
+		let a = bdraw t
+		endTime <- a `deepseq` getCPUTime
+		tail <- times ts
+		return ((round $ fromIntegral(endTime - startTime)/ 1000000000) : tail)
+
+main = do
+	let numOfNodes = [10000, 20000 .. 100000]
+	let trees = map (\x -> generiraj x 42) numOfNodes
+	benchTimes <- times trees
+	return benchTimes
