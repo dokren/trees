@@ -18,9 +18,9 @@ data Btree x
 	| Br (Btree x) x (Btree x)
 		deriving Show
 		
-instance NFData (Btree x) where
+instance NFData x => NFData (Btree x) where
 	rnf (Lf x) = seq (Lf x) ()
-	rnf (Br l x r) = seq (rnf l) (rnf r)
+	rnf (Br l x r) = (rnf r) `seq` (rnf l) `seq` (rnf x) 
 	
 -- | The fork (f, g) of two functions f and g takes a single value and returns a pair; thus fork (f, g) a = (f a, g a)
 fork :: (a -> b, a -> d) -> a -> (b, d)

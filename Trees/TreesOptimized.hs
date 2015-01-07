@@ -10,9 +10,9 @@ data Btree x
 	| Br (Btree x) x (Btree x)
 		deriving Show
 
-instance NFData (Btree x) where
+instance NFData x => NFData (Btree x) where
 	rnf (Lf x) = seq (Lf x) ()
-	rnf (Br l x r) = seq (rnf l) (rnf r)
+	rnf (Br l x r) = (rnf r) `seq` (rnf l) `seq` (rnf x) 
 	
 infixr :++>:
 

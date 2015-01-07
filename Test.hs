@@ -1,7 +1,7 @@
 module Test where
 
---import Trees.Trees
-import Trees.TreesOptimized
+import Trees.Trees
+--import Trees.TreesOptimized
 import System.Random
 --import Criterion.Main
 import System.CPUTime
@@ -21,6 +21,10 @@ generateRandomTree j n = Br (generateRandomTree m x) 1 (generateRandomTree (i-m)
 				      
 generateNdepth 0 = (Lf 1)
 generateNdepth n = Br (generateNdepth (n-1)) 1 (generateNdepth (n-1))
+
+generateNRight :: Int -> Btree Int
+generateNRight 0 = (Lf 1)
+generateNRight n = Br (Lf 1) 1 (generateNRight (n-1))
 				     
 -- Benchmarking random trees.
 --main = defaultMain(map (\x -> bench (show x) (bm x)) ([100, 200 .. 1000]++[2000, 3000 .. --10000]++[20000, 30000 .. 100000]))
@@ -38,16 +42,19 @@ generateNdepth n = Br (generateNdepth (n-1)) 1 (generateNdepth (n-1))
 nodes (Lf _) = 1
 nodes (Br l _ r) = 1 + nodes l + nodes r
 
+times :: (Integral t, NFData a) => [Btree a] -> IO [t]
 times [] = do return []
 times (t:ts) = do
-		startTime <- t `deepseq` getCPUTime
-		let a = bdraw t
+		let temp = t
+		startTime <- temp `deepseq` getCPUTime
+		let a = bdraw t		
 		endTime <- a `deepseq` getCPUTime
 		tail <- times ts
 		return ((round $ fromIntegral(endTime - startTime)/ 1000000000) : tail)
 
 main = do
-	let numOfNodes = [10000, 20000 .. 100000]
-	let trees = map (\x -> generiraj x 42) numOfNodes
+	let numOfNodes = [50, 100 .. 500]
+	--let trees = map (\x -> generiraj x 42) numOfNodes :: [Btree Integer]
+	let trees = map (\x -> generateNRight x) numOfNodes :: [Btree Int]
 	benchTimes <- times trees
 	return benchTimes

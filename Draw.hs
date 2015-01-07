@@ -1,11 +1,12 @@
 module Draw where
 
---import Trees.Trees
-import Trees.TreesOptimized
+import Trees.Trees
+--import Trees.TreesOptimized
 import Diagrams.Prelude
 import Diagrams.Backend.SVG
 import Data.Tree
 import Diagrams.TwoD.Layout.Tree
+import Test
 
 newtype LabelS = LabelS String
 instance Show LabelS where
@@ -42,7 +43,7 @@ t8 = Br (Br (Br (Br (Lf 16) (8) (Lf 17)) (4) (Lf 9)) (2) (Br (Br (Lf 20) (10) (L
 
 testsString = [t1, t2]
 testsChar=[t3]
-testsInt=[t4, t5, t6, t7, t8]
+testsInt=map bdraw [t4, t5, t6, t7, t8]
 
 stringTrees = map (\(i,x) -> drawSVG ("stringTree"++(show i)++".svg") x) (zip [1..] testsString)
 charTrees = map (\(i,x) -> drawSVG ("charTree"++(show i)++".svg") x) (zip [1..] testsChar)
@@ -52,3 +53,14 @@ main = do
 	sequence stringTrees
 	sequence charTrees
 	sequence intTrees
+	
+t9 = generiraj 100 123
+
+mirror (Lf x) = (Lf x)
+mirror (Br l x r) = Br (mirror r) x (mirror l)
+
+draw = do
+	let (Br l x r) = generiraj 100 123
+	let trees = [(Br l x r), mirror (Br l x r), l, r]
+	let drawTrees = map (\(i,x) -> drawSVG ("testTree"++(show i)++".svg") x) (zip [1..] trees)
+	sequence drawTrees
