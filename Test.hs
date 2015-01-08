@@ -1,7 +1,7 @@
 module Test where
 
-import Trees.Trees
---import Trees.TreesOptimized
+--import Trees.Trees
+import Trees.TreesOptimized
 import System.Random
 --import Criterion.Main
 import System.CPUTime

@@ -1,7 +1,7 @@
 module Draw where
 
-import Trees.Trees
---import Trees.TreesOptimized
+--import Trees.Trees
+import Trees.TreesOptimized
 import Diagrams.Prelude
 import Diagrams.Backend.SVG
 import Data.Tree
@@ -16,7 +16,6 @@ newtype LabelC = LabelC Char
 instance Show LabelC where
 	show (LabelC a) = a:[]
 	
---Drawing
 drawSVG :: Show a => FilePath -> Btree a -> IO ()
 drawSVG fname t = renderSVG fname (mkSizeSpec (Just 1000.0) (Just 1000.0)) (tRender t)
 
@@ -43,7 +42,7 @@ t8 = Br (Br (Br (Br (Lf 16) (8) (Lf 17)) (4) (Lf 9)) (2) (Br (Br (Lf 20) (10) (L
 
 testsString = [t1, t2]
 testsChar=[t3]
-testsInt=map bdraw [t4, t5, t6, t7, t8]
+testsInt= [t4, t5, t6, t7, t8]
 
 stringTrees = map (\(i,x) -> drawSVG ("stringTree"++(show i)++".svg") x) (zip [1..] testsString)
 charTrees = map (\(i,x) -> drawSVG ("charTree"++(show i)++".svg") x) (zip [1..] testsChar)
